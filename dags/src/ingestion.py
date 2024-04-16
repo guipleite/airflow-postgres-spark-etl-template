@@ -28,7 +28,9 @@ def extract_data_api(api_endpoint):
             StructField("date", TimestampType(), True),
         ]
     )
-    spark = SparkSession.builder.appName("Get Data API").getOrCreate()
+    spark = SparkSession.builder.appName("Get Data API").config("spark.jars.packages", 
+                "org.postgresql:postgresql:42.6.0") \
+                .getOrCreate()
 
     dt = datetime.now()
     res = None
@@ -43,15 +45,29 @@ def extract_data_api(api_endpoint):
 
         df = spark.read.json(rdd, schema=schema_init)
         df = df.withColumn("date", f.lit(dt)).withColumn(
-            "price", f.expr("substring(price, 2, length(price))")
+            "price", f.expr("substring(price, 2, length(price))").cast(FloatType())
         )
 
         return df.select(
                     f.col("id"),f.col("image"),f.col("name"),f.col("price"),f.col("rating.*"),f.col("date"),
                 )
 
+def write_to_db(df):
 
+    url = "jdbc:postgresql://localhost:5433/template_db"
+ 
+    df.write \
+    .format("jdbc") \
+    .option("url", url) \
+    .option("dbtable", "bronze_layer.beer_reviews") \
+    .option("driver", "org.postgresql.Driver") \
+    .mode("overwrite").option("user", "postgres").option("password", "postgres") \
+    .save()
 
-api_endpoint = "https://api.sampleapis.com/beers/ale"
+if __name__ == "__main__":
 
-extract_data_api(api_endpoint).show()
+    api_endpoint = "https://api.sampleapis.com/beers/ale"
+
+    df = extract_data_api(api_endpoint)
+    df.show()
+    write_to_db(df)
