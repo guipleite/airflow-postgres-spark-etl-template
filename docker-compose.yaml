@@ -44,7 +44,6 @@ services:
     volumes:
         - ./dags/db/init.sql:/docker-entrypoint-initdb.d/init.sql
         - postgres-db-volume:/var/lib/postgresql-db/data
-
     command: -p 5433
 
   postgres:
