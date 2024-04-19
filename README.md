@@ -1,5 +1,5 @@
 # Template ETL with Airflow, Spark and Postgres
-Simple tamplate for ETLs using Postgres, Spark and Airflow deployed on docker containers.
+Simple template for ETLs using Postgres, Spark and Airflow deployed on docker containers.
 
 To deploy simply run:
 ```
